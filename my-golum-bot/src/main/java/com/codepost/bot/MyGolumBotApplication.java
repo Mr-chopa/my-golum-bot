@@ -8,10 +8,10 @@ import org.springframework.boot.web.support.SpringBootServletInitializer;
 @SpringBootApplication
 public class MyGolumBotApplication extends SpringBootServletInitializer {
 	
-	@Override
-	protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
-		return application.sources(MyGolumBotApplication.class);
-	}
+//	@Override
+//	protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
+//		return application.sources(MyGolumBotApplication.class);
+//	}
 
 	public static void main(String[] args) {
 		SpringApplication.run(MyGolumBotApplication.class, args);
