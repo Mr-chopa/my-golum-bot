@@ -1,6 +1,5 @@
 server:
   servletPath: /*
-  contextPath: /test
   
 telegram:
   bot:
