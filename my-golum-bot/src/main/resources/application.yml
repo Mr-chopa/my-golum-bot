@@ -5,3 +5,18 @@ telegram:
   bot:
     username: my_golum_bot
     token: 481180991:AAFZvYbWkpXOD3g5Hj9LvwkVEKZ1gOaJuxc
+
+google:
+  api:
+    search:
+      key: AIzaSyDxqm30QA1k9PZ8We8F7eali9vQuOjG9Mg
+      id: 000510803706192843578:4f3sfurmisk
+      query: https://www.googleapis.com/customsearch/v1?key={key}&cx={id}&q={query}&filter=1&searchType=image&start={offset}
+
+naver:
+  api:
+    search:
+      clientId: HE2YcRdF4VAWDBWD9QC3
+      clientSecret: OXWQaiLXHB
+      query: https://openapi.naver.com/v1/search/image?query={query}&display={display}&start={start}
+      maxCount: 40

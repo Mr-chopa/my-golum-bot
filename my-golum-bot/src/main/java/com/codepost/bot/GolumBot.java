@@ -1,21 +1,35 @@
 package com.codepost.bot;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.api.methods.send.SendMessage;
-import org.telegram.telegrambots.api.methods.send.SendPhoto;
+import org.telegram.telegrambots.api.methods.AnswerInlineQuery;
 import org.telegram.telegrambots.api.objects.Update;
+import org.telegram.telegrambots.api.objects.inlinequery.InlineQuery;
+import org.telegram.telegrambots.api.objects.inlinequery.inputmessagecontent.InputTextMessageContent;
+import org.telegram.telegrambots.api.objects.inlinequery.result.InlineQueryResult;
+import org.telegram.telegrambots.api.objects.inlinequery.result.InlineQueryResultArticle;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.exceptions.TelegramApiException;
 
+import com.codepost.bot.search.ImageSearch;
+import com.codepost.bot.search.ImageStore;
+
 @Component
 public class GolumBot extends TelegramLongPollingBot {
-
+	public static final int COUNT = 30;
+	
 	@Value("${telegram.bot.token}")
 	private String token;
 	
 	@Value("${telegram.bot.username}")
 	private String username;
+	
+	@Autowired
+	private ImageSearch imageSearch;
 	
 	@Override
 	public String getBotUsername() {
@@ -29,20 +43,58 @@ public class GolumBot extends TelegramLongPollingBot {
 
 	@Override
 	public void onUpdateReceived(Update update) {
-		if (update.hasMessage() && update.getMessage().hasText()) {
-            SendMessage message = new SendMessage() // Create a SendMessage object with mandatory fields
-                    .setChatId(update.getMessage().getChatId())
-                    .setText(update.getMessage().getText());
-            
-            SendPhoto sendPhotoRequest = new SendPhoto();
-            sendPhotoRequest.setChatId(update.getMessage().getChatId());
-            sendPhotoRequest.setPhoto("https://www.google.co.kr/url?sa=i&rct=j&q=&esrc=s&source=images&cd=&cad=rja&uact=8&ved=0ahUKEwj3gJr9n4bYAhWENJQKHW2zBGEQjRwIBw&url=https%3A%2F%2Fko.wikipedia.org%2Fwiki%2F%25ED%2595%2598%25ED%258A%25B8_(%25EA%25B8%25B0%25ED%2598%25B8)&psig=AOvVaw1lR-XvIA0isROY4rDiB8-I&ust=1513229138712009");
-            try {
-            		sendPhoto(sendPhotoRequest);
-                execute(message); // Call method to send the message
-            } catch (TelegramApiException e) {
-                e.printStackTrace();
-            }
-        }
+		if (update.hasInlineQuery() && update.getInlineQuery().hasQuery()) {
+			InlineQuery query = update.getInlineQuery();
+			
+			AnswerInlineQuery answer;
+			
+			try {
+				int offset = 1;
+				
+				if(query.getOffset() != null && !"".equals(query.getOffset())) {
+					offset = Integer.parseInt(query.getOffset());
+				}
+				
+				answer = ImageStore.getInstance().search(imageSearch, query.getFrom(), query.getQuery(), offset, COUNT);
+				answer.setInlineQueryId(query.getId());
+				
+	            execute(answer);
+			} catch(Exception e) {
+				try {
+					answer = new AnswerInlineQuery();
+					
+					InlineQueryResultArticle result = new InlineQueryResultArticle();
+					result.setId("error");
+					result.setTitle("Error");
+					result.setDescription("Bot error message");
+					result.setInputMessageContent(new InputTextMessageContent().setMessageText(makeExceptionMsg(e)));
+					
+					List<InlineQueryResult> list = new ArrayList<InlineQueryResult>();
+					list.add(result);
+					
+					answer.setResults(list);
+					
+					execute(answer);
+				} catch(TelegramApiException e1) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+	
+	private String makeExceptionMsg(Exception e) {
+		StringBuilder sb = new StringBuilder();
+		sb.append(e.getMessage()).append("\n");
+		
+		StackTraceElement[] stacks = e.getStackTrace();
+		StackTraceElement stack;
+		
+		for(int i=0; i<stacks.length; i++) {
+			stack = stacks[i];
+			
+			sb.append("\tat ").append(stack.getClassName()).append(".").append(stack.getMethodName()).append("(").append(stack.getFileName()).append(":").append(stack.getLineNumber()).append(")\n");
+		}
+		
+		return sb.toString();
 	}
 }
