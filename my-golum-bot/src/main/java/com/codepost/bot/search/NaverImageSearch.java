@@ -76,8 +76,6 @@ public class NaverImageSearch implements ImageSearch {
 
 	@Override
 	public AnswerInlineQuery getAnswer(StoredItem item, int offset, int count) {
-		System.out.println("call getAnswer : offset["+offset+"]");
-		
 		JsonNode obj = item.getObj();
 		
 		JsonNode arr = obj.get("items");

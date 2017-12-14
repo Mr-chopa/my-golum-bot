@@ -32,7 +32,6 @@ public class ImageStore {
 		if(item == null 
 				|| !item.getQuery().equals(query)
 				|| (item.getQuery().equals(query) && item.getCount()==is.maxCount() && item.getCount()*item.getRound()<item.getOffset())) {
-			System.out.println("여기444");
 			
 			JsonNode obj = is.search(query, offset, is.maxCount());
 			
