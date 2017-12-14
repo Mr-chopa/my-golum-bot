@@ -43,6 +43,7 @@ public class GolumBot extends TelegramLongPollingBot {
 
 	@Override
 	public void onUpdateReceived(Update update) {
+		System.out.println("호출됨");
 		if (update.hasInlineQuery() && update.getInlineQuery().hasQuery()) {
 			InlineQuery query = update.getInlineQuery();
 			
