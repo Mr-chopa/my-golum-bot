@@ -23,4 +23,4 @@ naver:
       clientId: HE2YcRdF4VAWDBWD9QC3
       clientSecret: OXWQaiLXHB
       query: https://openapi.naver.com/v1/search/image?query={query}&display={display}&start={start}
-      maxCount: 40
+      maxCount: 100
