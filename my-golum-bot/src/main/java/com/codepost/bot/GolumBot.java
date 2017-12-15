@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.api.methods.AnswerInlineQuery;
+import org.telegram.telegrambots.api.methods.send.SendMessage;
 import org.telegram.telegrambots.api.objects.Update;
 import org.telegram.telegrambots.api.objects.inlinequery.InlineQuery;
 import org.telegram.telegrambots.api.objects.inlinequery.inputmessagecontent.InputTextMessageContent;
@@ -43,7 +44,6 @@ public class GolumBot extends TelegramLongPollingBot {
 
 	@Override
 	public void onUpdateReceived(Update update) {
-		System.out.println("호출됨");
 		if (update.hasInlineQuery() && update.getInlineQuery().hasQuery()) {
 			InlineQuery query = update.getInlineQuery();
 			
@@ -76,6 +76,24 @@ public class GolumBot extends TelegramLongPollingBot {
 					answer.setResults(list);
 					
 					execute(answer);
+				} catch(TelegramApiException e1) {
+					e.printStackTrace();
+				}
+			}
+		}
+		else if(update.hasMessage() && update.getMessage().hasText()) {
+			SendMessage message = new SendMessage();
+			
+			try {
+				message.setChatId(update.getMessage().getChatId());
+				message.setText("@my_golum_bot [검색어]");
+				
+				execute(message);
+			} catch(Exception e) {
+				try {
+					message.setText(makeExceptionMsg(e));
+					
+					execute(message);
 				} catch(TelegramApiException e1) {
 					e.printStackTrace();
 				}
