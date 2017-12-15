@@ -1,5 +1,6 @@
 server:
   servletPath: /*
+  port: 8080
   
 telegram:
   bot_old:
