@@ -3,6 +3,9 @@ server:
   
 telegram:
   bot:
+    username: img_gollum_bot
+    token: 483472435:AAFuvruwjyZUGESgLSwW0Py8FRBkLEv8-X0
+  bot_old:
     username: my_golum_bot
     token: 481180991:AAFZvYbWkpXOD3g5Hj9LvwkVEKZ1gOaJuxc
 

@@ -86,7 +86,7 @@ public class GolumBot extends TelegramLongPollingBot {
 			
 			try {
 				message.setChatId(update.getMessage().getChatId());
-				message.setText("@my_golum_bot [검색어]");
+				message.setText("@img_gollum_bot [검색어]");
 				
 				execute(message);
 			} catch(Exception e) {
