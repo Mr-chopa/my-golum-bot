@@ -73,6 +73,7 @@ public class GolumBot extends TelegramLongPollingBot {
 			} catch(Exception e) {
 				try {
 					answer = new AnswerInlineQuery();
+					answer.setInlineQueryId(query.getId());
 					
 					InlineQueryResultArticle result = new InlineQueryResultArticle();
 					result.setId("error");
@@ -90,7 +91,7 @@ public class GolumBot extends TelegramLongPollingBot {
 					log.error("exception message response error - " + e1.getMessage(), e1);
 				}
 				
-				log.warn(e.getMessage());
+				log.warn(e.getMessage(), e);
 			}
 		}
 		else if(update.hasMessage() && update.getMessage().hasText()) {
@@ -112,7 +113,7 @@ public class GolumBot extends TelegramLongPollingBot {
 					log.error("exception message response error - " + e1.getMessage(), e1);
 				}
 				
-				log.warn(e.getMessage());
+				log.warn(e.getMessage(), e);
 			}
 		}
 	}
