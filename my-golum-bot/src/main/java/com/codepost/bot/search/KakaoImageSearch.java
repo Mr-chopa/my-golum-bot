@@ -8,6 +8,8 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.PostConstruct;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Component;
@@ -19,21 +21,29 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Component(ImageSearch.NAME)
-@ConditionalOnExpression("'${telegram.bot.api}' eq 'naver'")
-public class NaverImageSearch implements ImageSearch {
-	/** 최대 조회 건수(Naver API 제한) */
-	@Value("${naver.api.search.maxCount}")
+@ConditionalOnExpression("'${telegram.bot.api}' eq 'kakao'")
+public class KakaoImageSearch implements ImageSearch {
+	/** 최대 조회 건수(Kakao API 제한) */
+	@Value("${kakao.api.search.maxCount}")
 	private int maxCount;
 	
-	@Value("${naver.api.search.clientId}")
-	private String clientId;
+	/** 최대 조회 페이지(Kakao API 제한) */
+	@Value("${kakao.api.search.maxPage}")
+	private int maxPage;
 	
-	@Value("${naver.api.search.clientSecret}")
-	private String clientSecret;
+	@Value("${kakao.api.search.restApiKey}")
+	private String restApiKey;
 	
-	@Value("${naver.api.search.query}")
+	@Value("${kakao.api.search.query}")
 	private String searchQuery;
-
+	
+	private String authKey;
+	
+	@PostConstruct
+	public void setAuthKey() {
+		authKey = "KakaoAK " + restApiKey;
+	}
+	
 	@Override
 	public JsonNode search(String query, int offset, int count) {
 		BufferedReader br = null;
@@ -41,15 +51,14 @@ public class NaverImageSearch implements ImageSearch {
 		
 		try {
 			String searchUrl = searchQuery.replace("{query}", URLEncoder.encode(query, "UTF-8"))
-					.replace("{display}", Integer.toString(maxCount))
-					.replace("{start}", Integer.toString(offset));
+					.replace("{size}", Integer.toString(maxCount))
+					.replace("{page}", Integer.toString((offset-1)/maxCount+1));
 			
 			URL url = new URL(searchUrl);
 			conn = (HttpURLConnection)url.openConnection();
 			
 			conn.setRequestMethod("GET");
-			conn.setRequestProperty("X-NAVER-Client-Id", clientId);
-			conn.setRequestProperty("X-Naver-Client-Secret", clientSecret);
+			conn.setRequestProperty("Authorization", authKey);
 			
 			int responseCode = conn.getResponseCode();
 			
@@ -87,7 +96,7 @@ public class NaverImageSearch implements ImageSearch {
 	public AnswerInlineQuery getAnswer(StoredItem item, int offset, int count) {
 		JsonNode obj = item.getObj();
 		
-		JsonNode arr = obj.get("items");
+		JsonNode arr = obj.get("documents");
 		
 		AnswerInlineQuery answer = new AnswerInlineQuery();
 		List<InlineQueryResult> list = new ArrayList<InlineQueryResult>();
@@ -104,8 +113,8 @@ public class NaverImageSearch implements ImageSearch {
 			
 			result = new InlineQueryResultPhoto();
 			result.setId(Integer.toString(offset+i));
-			result.setPhotoUrl(tmp.get("link").asText());
-			result.setThumbUrl(tmp.get("thumbnail").asText());
+			result.setPhotoUrl(tmp.get("image_url").asText());
+			result.setThumbUrl(tmp.get("thumbnail_url").asText());
 			
 			list.add(result);
 		}
@@ -121,6 +130,7 @@ public class NaverImageSearch implements ImageSearch {
 
 	@Override
 	public int count(JsonNode obj) {
-		return obj.get("display").asInt();
+		return obj.get("documents").size();
 	}
+
 }

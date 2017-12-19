@@ -5,6 +5,8 @@ import org.telegram.telegrambots.api.methods.AnswerInlineQuery;
 import com.fasterxml.jackson.databind.JsonNode;
 
 public interface ImageSearch {
+	public static String NAME = "ImageSearch";
+	
 	/**
 	 * 이미지 검색
 	 * @param query 검색어

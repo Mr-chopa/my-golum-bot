@@ -9,6 +9,7 @@ telegram:
   bot:
     username: my_golum_bot
     token: 481180991:AAHlz7Ye46iBNSdanm-OHKJZs5OTytUtaDk
+    api: kakao
 
 google:
   api:
@@ -24,3 +25,11 @@ naver:
       clientSecret: OXWQaiLXHB
       query: https://openapi.naver.com/v1/search/image?query={query}&display={display}&start={start}
       maxCount: 100
+
+kakao:
+  api:
+    search:
+      restApiKey: ace782219285baeb0ae371dbc0034eb0
+      query: https://dapi.kakao.com/v2/search/image?query={query}&page={page}&size={size}
+      maxCount: 80
+      maxPage: 50
