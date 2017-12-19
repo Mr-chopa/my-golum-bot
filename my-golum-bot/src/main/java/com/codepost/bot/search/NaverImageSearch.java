@@ -8,6 +8,8 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Component;
@@ -21,6 +23,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Component(ImageSearch.NAME)
 @ConditionalOnExpression("'${telegram.bot.api}' eq 'naver'")
 public class NaverImageSearch implements ImageSearch {
+	private final Log log = LogFactory.getLog(getClass());
+	
 	/** 최대 조회 건수(Naver API 제한) */
 	@Value("${naver.api.search.maxCount}")
 	private int maxCount;
@@ -39,10 +43,14 @@ public class NaverImageSearch implements ImageSearch {
 		BufferedReader br = null;
 		HttpURLConnection conn = null;
 		
+		String searchUrl = null;
+		
 		try {
-			String searchUrl = searchQuery.replace("{query}", URLEncoder.encode(query, "UTF-8"))
+			searchUrl = searchQuery.replace("{query}", URLEncoder.encode(query, "UTF-8"))
 					.replace("{display}", Integer.toString(maxCount))
 					.replace("{start}", Integer.toString(offset));
+			
+			log.debug("searchUrl : " + searchUrl);
 			
 			URL url = new URL(searchUrl);
 			conn = (HttpURLConnection)url.openConnection();
@@ -71,6 +79,10 @@ public class NaverImageSearch implements ImageSearch {
 			
 			return mapper.readTree(br);
 		} catch(Exception e) {
+			log.warn("searchUrl : " + searchUrl);
+			log.warn("X-NVAER-Client-Id : [" + clientId + "]");
+			log.warn("X-Naver-Client-Secret : [" + clientSecret + "]");
+			
 			throw new RuntimeException(e);
 		} finally {
 			try { if(br != null) br.close(); } catch(Exception ex) {}
@@ -100,14 +112,18 @@ public class NaverImageSearch implements ImageSearch {
 		int cnt = 0;
 		
 		for(int i=startOffset-1; i<to; i++, cnt++) {
-			tmp = arr.get(i);
+			try {
+				tmp = arr.get(i);
 			
-			result = new InlineQueryResultPhoto();
-			result.setId(Integer.toString(offset+i));
-			result.setPhotoUrl(tmp.get("link").asText());
-			result.setThumbUrl(tmp.get("thumbnail").asText());
-			
-			list.add(result);
+				result = new InlineQueryResultPhoto();
+				result.setId(Integer.toString(offset+i));
+				result.setPhotoUrl(tmp.get("link").asText());
+				result.setThumbUrl(tmp.get("thumbnail").asText());
+				
+				list.add(result);
+			} catch(Exception e) {
+				log.warn(e.getMessage(), e);
+			}
 		}
 		
 		int nextOffset = offset+cnt;
@@ -115,6 +131,11 @@ public class NaverImageSearch implements ImageSearch {
 		answer.setResults(list);
 		answer.setNextOffset(Integer.toString(nextOffset));
 		item.setOffset(nextOffset);
+		
+		if(log.isDebugEnabled()) {
+			log.debug("answer cnt : " + list.size());
+			log.debug("next offset : " + nextOffset);
+		}
 		
 		return answer;
 	}

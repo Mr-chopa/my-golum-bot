@@ -10,6 +10,8 @@ import java.util.List;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Component;
@@ -23,6 +25,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Component(ImageSearch.NAME)
 @ConditionalOnExpression("'${telegram.bot.api}' eq 'kakao'")
 public class KakaoImageSearch implements ImageSearch {
+	private final Log log = LogFactory.getLog(getClass());
+	
 	/** 최대 조회 건수(Kakao API 제한) */
 	@Value("${kakao.api.search.maxCount}")
 	private int maxCount;
@@ -48,11 +52,14 @@ public class KakaoImageSearch implements ImageSearch {
 	public JsonNode search(String query, int offset, int count) {
 		BufferedReader br = null;
 		HttpURLConnection conn = null;
+		String searchUrl = null;
 		
 		try {
-			String searchUrl = searchQuery.replace("{query}", URLEncoder.encode(query, "UTF-8"))
+			searchUrl = searchQuery.replace("{query}", URLEncoder.encode(query, "UTF-8"))
 					.replace("{size}", Integer.toString(maxCount))
 					.replace("{page}", Integer.toString((offset-1)/maxCount+1));
+			
+			log.debug("searchUrl : " + searchUrl);
 			
 			URL url = new URL(searchUrl);
 			conn = (HttpURLConnection)url.openConnection();
@@ -80,6 +87,9 @@ public class KakaoImageSearch implements ImageSearch {
 			
 			return mapper.readTree(br);
 		} catch(Exception e) {
+			log.warn("searchUrl : " + searchUrl);
+			log.warn("Authorization : [" + authKey + "]");
+			
 			throw new RuntimeException(e);
 		} finally {
 			try { if(br != null) br.close(); } catch(Exception ex) {}
@@ -124,6 +134,11 @@ public class KakaoImageSearch implements ImageSearch {
 		answer.setResults(list);
 		answer.setNextOffset(Integer.toString(nextOffset));
 		item.setOffset(nextOffset);
+		
+		if(log.isDebugEnabled()) {
+			log.debug("answer cnt : " + list.size());
+			log.debug("next offset : " + nextOffset);
+		}
 		
 		return answer;
 	}

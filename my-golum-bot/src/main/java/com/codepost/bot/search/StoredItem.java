@@ -39,4 +39,10 @@ public class StoredItem {
 	public void setObj(JsonNode obj) {
 		this.obj = obj;
 	}
+	
+	@Override
+	public String toString() {
+		return "StoredItem [query=" + query + ", offset=" + offset + ", round=" + round + ", count=" + count + ", obj="
+				+ obj + "]";
+	}
 }

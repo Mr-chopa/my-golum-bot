@@ -3,6 +3,8 @@ package com.codepost.bot;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -21,6 +23,8 @@ import com.codepost.bot.search.ImageStore;
 
 @Component
 public class GolumBot extends TelegramLongPollingBot {
+	private final Log log = LogFactory.getLog(getClass());
+	
 	public static final int COUNT = 30;
 	
 	@Value("${telegram.bot.token}")
@@ -44,7 +48,11 @@ public class GolumBot extends TelegramLongPollingBot {
 
 	@Override
 	public void onUpdateReceived(Update update) {
+		log.debug("onUpdateReceived() called");
+		
 		if (update.hasInlineQuery() && update.getInlineQuery().hasQuery()) {
+			log.debug("inline query called");
+			
 			InlineQuery query = update.getInlineQuery();
 			
 			AnswerInlineQuery answer;
@@ -55,6 +63,8 @@ public class GolumBot extends TelegramLongPollingBot {
 				if(query.getOffset() != null && !"".equals(query.getOffset())) {
 					offset = Integer.parseInt(query.getOffset());
 				}
+				
+				log.debug(query);
 				
 				answer = ImageStore.getInstance().search(imageSearch, query.getFrom(), query.getQuery(), offset, COUNT);
 				answer.setInlineQueryId(query.getId());
@@ -77,11 +87,15 @@ public class GolumBot extends TelegramLongPollingBot {
 					
 					execute(answer);
 				} catch(TelegramApiException e1) {
-					e.printStackTrace();
+					log.error("exception message response error - " + e1.getMessage(), e1);
 				}
+				
+				log.warn(e.getMessage());
 			}
 		}
 		else if(update.hasMessage() && update.getMessage().hasText()) {
+			log.debug("text message called");
+			
 			SendMessage message = new SendMessage();
 			
 			try {
@@ -95,8 +109,10 @@ public class GolumBot extends TelegramLongPollingBot {
 					
 					execute(message);
 				} catch(TelegramApiException e1) {
-					e.printStackTrace();
+					log.error("exception message response error - " + e1.getMessage(), e1);
 				}
+				
+				log.warn(e.getMessage());
 			}
 		}
 	}

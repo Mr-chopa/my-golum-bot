@@ -1,7 +1,11 @@
+spring:
+  profiles:
+    active: local
+
 server:
   servletPath: /*
   port: 8080
-  
+
 telegram:
   bot_old:
     username: img_gollum_bot
@@ -33,3 +37,24 @@ kakao:
       query: https://dapi.kakao.com/v2/search/image?query={query}&page={page}&size={size}
       maxCount: 80
       maxPage: 50
+
+logging:
+  file: ~/logs/my-golum-bot.log
+  pattern:
+    console: "%d %-5level %logger : %msg%n"
+    file: "%d %-5level [%thread] %logger : %msg%n"
+  level:
+    org.springframework.web: warn
+    com.codepost: warn
+      
+---
+spring:
+  profiles: local  
+logging:
+  file: logs/my-golum-bot.log
+  pattern:
+    console: "%d %-5level %logger [%file:%line] : %msg%n"
+  level:
+    org.springframework.web: warn
+    com.codepost: debug
+  
